@@ -1,0 +1,52 @@
+from fastapi import FastAPI
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+app = FastAPI()
+
+database_url = "postgresql://postgres:mypassword@localhost/database"
+engine = create_engine(database_url)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+@app.get("/users/{user_id}")
+async def get_user(user_id: int):
+
+    db = SessionLocal()
+
+    user = db.query(User).filter(User.id == user_id).first()
+
+    db.close()
+    return {"user": user}
+
+
+@app.post("/users")
+async def create_user(user: UserCreate):
+    
+    db = SessionLocal()
+    
+    new_user = User(name=user.name, email=user.email)
+    
+    db.add(new_user)
+    
+    db.commit()
+    
+    db.close()
+    return {"message": "User created successfully"}
+
+
+@app.put("/users/{user_id}")
+async def update_user(user_id: int, user: UserUpdate):
+    
+    db = SessionLocal()
+    
+    db_user = db.query(User).filter(User.id == user_id).first()
+    
+    db_user.name = user.name
+
+    db_user.email = user.email
+    
+    db.commit()
+    
+    db.close()
+    return {"message": "User updated successfully"}
