@@ -1,52 +1,48 @@
+import asyncio
+import typer
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
+import db
+import service
+
+
 app = FastAPI()
-
-database_url = "postgresql://postgres:mypassword@localhost/database"
-engine = create_engine(database_url)
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+cli = typer.Typer()
 
 
-@app.get("/users/{user_id}")
-async def get_user(user_id: int):
-
-    db = SessionLocal()
-
-    user = db.query(User).filter(User.id == user_id).first()
-
-    db.close()
-    return {"user": user}
+class UserSchema(BaseModel):
+    username: str
+    tg_id: int
+    fio: str
+    status: int
+    fullname: str
 
 
-@app.post("/users")
-async def create_user(user: UserCreate):
-    
-    db = SessionLocal()
-    
-    new_user = User(name=user.name, email=user.email)
-    
-    db.add(new_user)
-    
-    db.commit()
-    
-    db.close()
-    return {"message": "User created successfully"}
+@cli.command()
+def db_init_models():
+    asyncio.run(db.init_models())
+    print("Done")
 
 
-@app.put("/users/{user_id}")
-async def update_user(user_id: int, user: UserUpdate):
-    
-    db = SessionLocal()
-    
-    db_user = db.query(User).filter(User.id == user_id).first()
-    
-    db_user.name = user.name
+@app.get(f"/users/get_user/{tg_id}", response_model=list[UserSchema])
+async def get_user(session: AsyncSession = Depends(db.get_session), tg_id):
+    user = await service.get_user(session, tg_id)
+    return user
 
-    db_user.email = user.email
-    
-    db.commit()
-    
-    db.close()
-    return {"message": "User updated successfully"}
+
+@app.post("/users/add_user")
+async def add_city(user: UserSchema, session: AsyncSession = Depends(db.get_session)):
+    user = service.add_user(session, user.tg_id, user.username, user.tg_id,)
+    try:
+        await session.commit()
+        return user
+    except IntegrityError as ex:
+        await session.rollback()
+        
+
+
+if __name__ == "__main__":
+    cli()
