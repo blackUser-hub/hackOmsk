@@ -5,8 +5,8 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
-import api.db
-import api.service
+import api.db as db
+import api.service as service
 
 
 app = FastAPI()
