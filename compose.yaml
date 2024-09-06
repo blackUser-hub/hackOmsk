@@ -13,6 +13,7 @@ services:
     #   KAFKA_PORT: ${KAFKA_PORT}
     #   API_URL: http://backend:${BACKEND_PORT}
       TOKEN: ${TOKEN}
+      API_URL: http://backend:${BACKEND_PORT}
     #   ENCRYPTION_KEY: ${ENCRYPTION_KEY}
     # depends_on:
     #   backend: 
