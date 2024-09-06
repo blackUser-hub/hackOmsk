@@ -1,5 +1,6 @@
 import asyncio
 import typer
+import uvicorn
 from fastapi import FastAPI
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,13 +8,18 @@ from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 import api.db as db
 import api.service as service
-from fastapi import APIRouter 
-from sqlalchemy import select 
-from api.models import User
+from contextlib import asynccontextmanager
+from config import BACKEND_HOST, BACKEND_PORT
 
-app = FastAPI()
-router = APIRouter(prefix='/users', tags=['Работа с пользователями'])
 
+
+cli = typer.Typer()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 class UserSchema(BaseModel):
     username: str
@@ -23,15 +29,19 @@ class UserSchema(BaseModel):
     fullname: str
 
 
-@router.get("/get_user/{tg_id}", summary="Получить пользователя", response_model=list[UserSchema])
-async def get_user(tg_id: int):
-    async with db.async_session_maker() as session: 
-        query = select(User).where(tg_id=tg_id)
-        result = await session.execute(query)
-        students = result.scalars().all()
-        return students
+@cli.command()
+def db_init_models():
+    asyncio.run(db.init_models())
+    print("Done")
 
-@router.post("/add_user", summary="Добавить пользователя")
+
+@app.get("/users/get_user/{tg_id}", response_model=list[UserSchema])
+async def get_user(tg_id: int, session: AsyncSession = Depends(db.get_session)):
+    user = await service.get_user(session, tg_id)
+    return user
+
+
+@app.post("/users/add_user")
 async def add_city(user: UserSchema, session: AsyncSession = Depends(db.get_session)):
     user = service.add_user(session, user.tg_id, user.username, user.fullname, user.status, user.tasks)
     try:
@@ -42,4 +52,6 @@ async def add_city(user: UserSchema, session: AsyncSession = Depends(db.get_sess
         
 
 
-app.include_router()
+if __name__ == "__main__":
+    cli()
+    uvicorn.run("app.main:app", reload=True, host=BACKEND_HOST, port=int(BACKEND_PORT))
