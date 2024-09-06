@@ -9,7 +9,10 @@ async def get_user(session: AsyncSession,tg_id:int) -> list[models.User]:
 
 
 async def add_user(session: AsyncSession, tg_idd: int, usernamee: str, fullnamee: str, statuss: int, taskss: int):
-    new_User = models.User(tg_id=tg_idd ,name=usernamee, fullname=fullnamee, status=statuss, tasks=taskss)
-    session.add(new_User)
-    await session.commit()
-    return new_User
+    async with session:
+        res = await session.scalar(select(models.User).filter_by(tg_id=tg_idd))
+        if res is None:
+            session.add(models.User(tg_id=tg_idd, username=usernamee, fullname=fullnamee, status=statuss, tasks=taskss))
+            await session.commit()
+            return True
+        return False
