@@ -27,15 +27,15 @@ def db_init_models():
     print("Done")
 
 
-@app.get(f"/users/get_user/{tg_id}", response_model=list[UserSchema])
-async def get_user(session: AsyncSession = Depends(db.get_session), tg_id):
+@app.get("/users/get_user/{tg_id}", response_model=list[UserSchema])
+async def get_user(tg_id: int, session: AsyncSession = Depends(db.get_session)):
     user = await service.get_user(session, tg_id)
     return user
 
 
 @app.post("/users/add_user")
 async def add_city(user: UserSchema, session: AsyncSession = Depends(db.get_session)):
-    user = service.add_user(session, user.tg_id, user.username, user.tg_id,)
+    user = service.add_user(session, user.tg_id, user.username, user.fullname, user.status, user.tasks)
     try:
         await session.commit()
         return user

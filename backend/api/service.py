@@ -8,7 +8,7 @@ async def get_user(session: AsyncSession,tg_id:int) -> list[models.User]:
     return result.scalars().all()
 
 
-async def add_user(session: AsyncSession, tg_id: int, username: str, fio: str, status: int, tasks: int):
-    new_User = models.User(tg_id=tg_id,name=username, fio=fio, status=status, tasks=tasks)
+async def add_user(session: AsyncSession, tg_id: int, username: str, fullname: str, status: int, tasks: int):
+    new_User = models.User(tg_id=tg_id,name=username, fullname=fullname, status=status, tasks=tasks)
     session.add(new_User)
     return new_User

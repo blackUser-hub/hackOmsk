@@ -2,6 +2,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
+from typing import AsyncGenerator
 
 
 DATABASE_URL = "postgresql://postgres:mypassword@localhost/database"
@@ -21,6 +22,6 @@ async def init_models():
 
 
 # Dependency
-async def get_session() -> AsyncSession:
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         yield session
