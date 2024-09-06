@@ -36,9 +36,9 @@ async def get_user(tg_id: int):
         return students
 
 @router.post("/add_user", summary="Добавить пользователя")
-async def add_city(user: UserSchema, session: AsyncSession = Depends(db.get_session)):
+async def add_user(tg_id: int, username:str, fullname:str, status: int, tasks: int, user: UserSchema, session: AsyncSession = Depends(db.get_session) ):
     logger.info("started adding user")
-    user = service.add_user(session, user.tg_id, user.username, user.fullname, user.status, user.tasks)
+    user = service.add_user(session, tg_id, username, fullname, status, tasks)
     try:
         await session.commit()
         return user
