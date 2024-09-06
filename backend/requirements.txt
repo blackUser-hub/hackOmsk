@@ -1,4 +1,6 @@
 fastapi
 sqlalchemy
+psycopg2-binary
 asyncpg
 typer
+uvicorn

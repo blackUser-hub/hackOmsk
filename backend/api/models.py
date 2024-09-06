@@ -1,7 +1,7 @@
 from sqlalchemy import Column
 from sqlalchemy import String
 from sqlalchemy import Integer
-import db
+import api.db as db
 
 class User(db.Base):
     __tablename__ = "newtable"
