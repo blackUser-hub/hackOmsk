@@ -1,0 +1,5 @@
+git+https://github.com/m-bain/whisperx.git
+torch
+pyannote.audio 
+pydub
+requests
