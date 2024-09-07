@@ -22,6 +22,9 @@ services:
     #     condition: service_started
     #   broker:
     #     condition: service_healthy
+    volumes:
+      - software:/videos
+      - ./app/audio_files:/app/audio_files
 
   # software:
   #   container_name: software
@@ -157,3 +160,4 @@ services:
 volumes:
   pgdata:
   pgadmin:
+  software:

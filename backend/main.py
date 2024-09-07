@@ -1,38 +1,46 @@
-import asyncio, uvicorn
-import typer
-from typer import Typer
-from fastapi import FastAPI
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
-from sqlalchemy.exc import IntegrityError
-import api.db as db
-import api.service as service
-from fastapi import APIRouter 
-from sqlalchemy import select 
-from api.models import User
-from config import BACKEND_HOST, BACKEND_PORT
-from api.routers.router import router
-from contextlib import asynccontextmanager
+import psycopg2
 import asyncio
-
-cli = Typer()
-@cli.command()
-def db_init_models():
-    asyncio.run(db.init_models())
-    uvicorn.run("main:app", reload=True, host=BACKEND_HOST, port=int(BACKEND_PORT))
-    print("Done")
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # asyncio.create_task(transactions_listener())
-    yield
-
-app = FastAPI(lifespan=lifespan)
+from fastapi import FastAPI
 
 
-app.include_router(router)
+def create_users_table():
+
+    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    cur = conn.cursor()
+    cur.execute('''
+       CREATE TABLE IF NOT EXISTS users(
+            id SERIAL PRIMARY KEY,
+            tg_id bigint,
+            username text,
+            password text,
+            status bigint,
+            tasks bigint
+        )
+    ''')
+    conn.commit()
+    conn.close()
+def create_tasks_table():
+
+    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    cur = conn.cursor()
+    cur.execute('''
+       CREATE TABLE IF NOT EXISTS tasks(
+            id SERIAL PRIMARY KEY,
+            tg_id bigint,
+            yandexgpt_text text,
+            audio_path text,
+            output_csv_path text,
+            otchet_docx_path text,
+            otchet_pdf_path text,
+            transcript_docx_path text,
+            status bigint default 0
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+app = FastAPI()
 
 if __name__ == "__main__":
-    cli()
-    
+    create_users_table()
+    create_tasks_table()
