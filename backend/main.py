@@ -10,7 +10,7 @@ import api.db as db
 import api.service as service
 from fastapi import APIRouter 
 from sqlalchemy import select 
-from api.models import User
+from api.models import UserModel
 from config import BACKEND_HOST, BACKEND_PORT
 from api.routers.router import router
 from contextlib import asynccontextmanager
