@@ -7,16 +7,13 @@ logger = logging.getLogger(__name__)
 
 
 async def init_user(tg_id: int, username: str, fullname: str, status: int, tasks: int):
-    params = {"tg_id": tg_id, "username": username, "fullname": fullname, "status": status, "tasks": tasks}
-    
-    
-    async with aiohttp.ClientSession() as session:
-        async with session.post(f'{backend_api_url}/users/initialize', params=params) as res:  
-            if res.status == 200:
-                return True
-            else:
-                logger.warning((await res.json())['detail'])   
-                return False
+    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    cur = conn.cursor()
+    cur.execute('''
+       INSERT INTO users (tg_id, username, password, status, tasks) VALUES (%s, %s, %s, %s, %s)
+    ''', (tg_id, username, fullname, status, tasks))
+    conn.commit()
+    conn.close()
 
             
 
@@ -24,7 +21,7 @@ async def get_user(tg_id: int):
     conn = psycopg2.connect(database="postgres", user="postgres", password="mypassword", host="db", port="5432")
     print("successfully connected")
     cur = conn.cursor()
-    cur.execute('''SELECT * FROM newtable WHERE tg_id=%s''', (tg_id,))
+    cur.execute('''SELECT * FROM users WHERE tg_id=%s''', (tg_id,))
     user = cur.fetchone()
     try:
         data = {
