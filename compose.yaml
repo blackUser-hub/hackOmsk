@@ -26,29 +26,7 @@ services:
       - software:/videos
       - ./app/audio_files:/app/audio_files
 
-  # software:
-  #   container_name: software
-  #   image: software:1.0.0
-  #   restart: on-failure
-  #   build:
-  #     context: ./software
-  #     dockerfile: .dockerfile
-  #   environment:
-  #     API_URL: http://backend:${BACKEND_PORT}
-  #     KAFKA_ORDERS_TOPIC_NAME: ${KAFKA_ORDERS_TOPIC_NAME}
-  #     KAFKA_HOST: broker
-  #     KAFKA_PORT: ${KAFKA_PORT}
-  #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-  #     API_KEY: ${API_KEY}
-  #     INFURA_URL: ${INFURA_URL}
-  #     TOKEN_SNIFFER_API: ${TOKEN_SNIFFER_API}
-  #   depends_on:
-  #     backend: 
-  #       condition: service_started
-  #     zookeeper: 
-  #       condition: service_started
-  #     broker:
-  #       condition: service_healthy
+  
 
   backend:
     container_name: backend
@@ -161,3 +139,4 @@ volumes:
   pgdata:
   pgadmin:
   software:
+  bot_tg:
