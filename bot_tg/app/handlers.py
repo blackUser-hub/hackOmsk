@@ -11,6 +11,7 @@ from app.bot_instance import bot, dp
 import os
 import aiohttp
 import asyncio
+import ml
 
 
 
@@ -55,6 +56,7 @@ async def fio_setting(message: Message, state: FSMContext):
 @router.callback_query(F.data.startswith("profile"))
 async def profile_callback(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
+    await call.message.answer(f"{ml.check_cuda()}")
     user_data = await rq.get_user(int(call.data.split(sep=" ")[1]))
     # user_data = {"name": "Синица Александр Павлович"}
     await call.message.answer(text=f"Добро пожаловать, {user_data['username']}!\nЧто вы хотите сделать?", reply_markup=profile_kb())

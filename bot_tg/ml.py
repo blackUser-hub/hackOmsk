@@ -159,6 +159,7 @@ async def yandexgpt(text, prompt: config.prompt):
         print(f"Ошибка: {response.status_code}")
         return "Error"
 
-
+def check_cuda():
+    return torch.cuda.is_available()
 if __name__ == "__main__":
     asyncio.run(diarize_transcript_audio("test2.wav"))

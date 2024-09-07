@@ -1,6 +1,7 @@
 services:
 
   bot:
+
     container_name: tg-bot
     image: tg-bot:1.0.0
     restart: on-failure
@@ -26,7 +27,6 @@ services:
       - software:/videos
       - ./app/audio_files:/app/audio_files
 
-  
 
   backend:
     container_name: backend
@@ -140,3 +140,4 @@ volumes:
   pgadmin:
   software:
   bot_tg:
+

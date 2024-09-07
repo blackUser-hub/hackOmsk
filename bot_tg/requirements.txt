@@ -2,8 +2,7 @@ aiogram
 requests
 aiohttp
 psycopg2-binary
-git+https://github.com/m-bain/whisperx.git
-torch
+whisperx
+torch --index-url https://download.pytorch.org/whl/cu124
 pyannote.audio 
 pydub
-requests
