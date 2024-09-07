@@ -24,6 +24,7 @@ services:
     #     condition: service_healthy
     volumes:
       - software:/videos
+      - ./app/audio_files:/app/audio_files
 
   # software:
   #   container_name: software

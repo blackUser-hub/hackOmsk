@@ -9,12 +9,31 @@ def create_users_table():
     cur = conn.cursor()
     cur.execute('''
        CREATE TABLE IF NOT EXISTS users(
-            id serial PRIMARY KEY,
-            tg_id int,
+            id SERIAL PRIMARY KEY,
+            tg_id bigint,
             username text,
             password text,
-            status int,
-            tasks int
+            status bigint,
+            tasks bigint
+        )
+    ''')
+    conn.commit()
+    conn.close()
+def create_tasks_table():
+
+    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    cur = conn.cursor()
+    cur.execute('''
+       CREATE TABLE IF NOT EXISTS tasks(
+            id SERIAL PRIMARY KEY,
+            tg_id bigint,
+            yandexgpt_text text,
+            audio_path text,
+            output_csv_path text,
+            otchet_docx_path text,
+            otchet_pdf_path text,
+            transcript_docx_path text,
+            status bigint default 0
         )
     ''')
     conn.commit()
@@ -24,3 +43,4 @@ app = FastAPI()
 
 if __name__ == "__main__":
     create_users_table()
+    create_tasks_table()

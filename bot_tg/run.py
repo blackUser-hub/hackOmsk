@@ -8,6 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.enums.content_type import ContentType
 from aiogram.fsm.state import State, StatesGroup
 from app.handlers import userReg
+from app.bot_instance import bot, dp
 
 
 
@@ -19,12 +20,17 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-bot = Bot(token=TOKEN)
-dp = Dispatcher()
+bot = bot
+dp =dp
 router1 = Router()
 
 
     
+
+
+
+
+
 
 
 
