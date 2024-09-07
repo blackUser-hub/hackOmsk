@@ -4,6 +4,7 @@ from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.enums.content_type import ContentType
 from aiogram.fsm.state import State, StatesGroup
+from aiogram.types.input_file import FSInputFile
 from app.keyboards import *
 import app.requests as rq
 import logging
@@ -12,6 +13,8 @@ import os
 import aiohttp
 import asyncio
 import ml
+import config
+from pathlib import Path
 
 
 
@@ -56,7 +59,6 @@ async def fio_setting(message: Message, state: FSMContext):
 @router.callback_query(F.data.startswith("profile"))
 async def profile_callback(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
-    await call.message.answer(f"{ml.check_cuda()}")
     user_data = await rq.get_user(int(call.data.split(sep=" ")[1]))
     # user_data = {"name": "Синица Александр Павлович"}
     await call.message.answer(text=f"Добро пожаловать, {user_data['username']}!\nЧто вы хотите сделать?", reply_markup=profile_kb())
@@ -72,11 +74,36 @@ async def otchets_callback(call: CallbackQuery):
     sd = await rq.get_otchets(call.from_user.id)
     await call.message.answer("Выберете интересующие вас отчеты совещания", reply_markup=otchet_kb(sd))
 
+@router.callback_query(F.data.startswith("transcript_download_"))
+async def senddec_callback(call: CallbackQuery):
+    otchet_id = int(call.data.replace("transcript_download_", ""))
+    otchet = await rq.get_otchet_from_id(otchet_id)
+    document = FSInputFile(otchet[7])
+    await bot.send_document(call.from_user.id, document)
+@router.callback_query(F.data.startswith("protocol_download_"))
+async def protocol_download_callback(call: CallbackQuery):
+    otchet_id = int(call.data.replace("protocol_download_", ""))
+    otchet = await rq.get_otchet_from_id(otchet_id)
+    document = FSInputFile(otchet[5])
+    await bot.send_document(call.from_user.id, document)
+@router.callback_query(F.data.startswith("protocol_download_pdf_"))
+async def protocol_download_pdf_(call: CallbackQuery):
+    otchet_id = int(call.data.replace("protocol_download_pdf_", ""))
+    otchet = await rq.get_otchet_from_id(otchet_id)
+    document = FSInputFile(otchet[6])
+    await bot.send_document(call.from_user.id, document)
+
 @router.callback_query(F.data.startswith("idotchet_"))
 async def idotchet_callback(call: CallbackQuery):
     otchet_id = int(call.data.replace("idotchet_", ""))
     otchet = await rq.get_otchet_from_id(otchet_id)
-    await call.message.answer(f"{otchet[3]}")
+    otchet_status = otchet[8]
+    if otchet_status == 1:
+        await call.message.answer(f"Аудио обрабатывается... ")
+    elif otchet_status == 2:
+        
+        await call.message.answer(f"{otchet[2]}", reply_markup=otchet_about_kb(otchet_id))
+    
 
 
 AUDIO_DIR = os.path.join('app', 'audio_files')
@@ -101,6 +128,17 @@ async def handle_audio(message: types.Message, state: FSMContext):
                     await bot.download_file(file_path, destination)
                 await message.reply(f"Аудиофайл {sanitized_filename} успешно загружен и сохранен!")
                 await rq.add_task(message.chat.id, f"app/audio_files/{sanitized_filename}")
+                # await ml.diarize_transcript_audio(f"app/audio_files/{sanitized_filename}", message.chat.id)
+                
+                audio_path = f"app/audio_files/{sanitized_filename}"
+                filename = Path(audio_path).stem
+                await ml.create_descrypt_file(audio_path=audio_path)
+                text = await ml.get_text(f"app/audio_files/{sanitized_filename}")
+                yandexgpttext = await ml.yandexgpt(text,prompt=config.prompt)
+                await ml.create_doc_from_text(yandexgpttext, audio_path)
+                otch_id = await rq.get_last_task_id(message.chat.id)
+                await rq.add_all_to_task(id=otch_id,yandexgpt_text=yandexgpttext,output_csv_path=f"app/outputs/{filename}/transcription.csv",otchet_docx_path=f"app/outputs/{filename}/docx.docx",otchet_pdf_path="",transcript_docx_path=f"app/outputs/{filename}/decryption.docx",status=2)
+                # добавить функцию док -- пдф
                 return
             except asyncio.TimeoutError:
                 if attempt < retries - 1:

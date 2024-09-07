@@ -3,6 +3,9 @@ requests
 aiohttp
 psycopg2-binary
 whisperx
-torch --index-url https://download.pytorch.org/whl/cu124
+torch
 pyannote.audio 
 pydub
+python-docx
+aspose-words 
+Spire.Office

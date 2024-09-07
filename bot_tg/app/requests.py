@@ -66,6 +66,28 @@ async def get_otchets(tg_id: int) -> List[Dict[str, Optional[str]]]:
     
     return data
 
+async def get_last_task_id(tg_id: int):
+    conn = psycopg2.connect(database="postgres", user="postgres", password="mypassword", host="db", port="5432")
+    print("successfully connected")
+    cur = conn.cursor()
+    cur.execute('''SELECT * FROM tasks WHERE tg_id=%s ORDER BY id DESC LIMIT 1''', (tg_id,))
+    last_task = cur.fetchone()
+    return last_task[0]
+
+
+async def add_output_csv_path(id:int, filename:str):
+    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    cur = conn.cursor()
+    cur.execute('''UPDATE tasks SET output_csv_path=%s, statatus=2 WHERE id=%s''', (filename, id))
+    conn.commit()
+    conn.close()  
+async def add_all_to_task(id: int, yandexgpt_text:str, output_csv_path:str, otchet_docx_path:str, otchet_pdf_path:str, transcript_docx_path:str, status:int):
+    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    cur = conn.cursor()
+    cur.execute('''UPDATE tasks SET yandexgpt_text=%s, output_csv_path=%s, otchet_docx_path=%s, otchet_pdf_path=%s, transcript_docx_path=%s, status=%s WHERE id=%s''', (yandexgpt_text, output_csv_path, otchet_docx_path, otchet_pdf_path, transcript_docx_path, status, id))
+    conn.commit()
+    conn.close()  
+
 async def get_otchet_from_id(id: int):
     conn = psycopg2.connect(database="postgres", user="postgres", password="mypassword", host="db", port="5432")
     print("successfully connected")

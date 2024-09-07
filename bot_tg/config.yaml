@@ -2,10 +2,10 @@ pipeline:
   name: pyannote.audio.pipelines.SpeakerDiarization
   params:
     clustering: AgglomerativeClustering
-    embedding: app/models/pyannote_model_wespeaker-voxceleb-resnet34-LM.bin
+    embedding: models/pyannote_model_wespeaker-voxceleb-resnet34-LM.bin
     embedding_batch_size: 32
     embedding_exclude_overlap: true
-    segmentation: app/models/pyannote_model_segmentation-3.0.bin
+    segmentation: models/pyannote_model_segmentation-3.0.bin
     segmentation_batch_size: 32
 
 params:
