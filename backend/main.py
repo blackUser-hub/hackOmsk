@@ -1,11 +1,12 @@
 import psycopg2
 import asyncio
 from fastapi import FastAPI
+from config import engine_url
 
 
 def create_users_table():
 
-    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    conn = (psycopg2.connect(engine_url))
     cur = conn.cursor()
     cur.execute('''
        CREATE TABLE IF NOT EXISTS users(
@@ -21,7 +22,7 @@ def create_users_table():
     conn.close()
 def create_tasks_table():
 
-    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    conn = (psycopg2.connect(engine_url))
     cur = conn.cursor()
     cur.execute('''
        CREATE TABLE IF NOT EXISTS tasks(

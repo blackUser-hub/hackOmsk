@@ -15,7 +15,7 @@ import asyncio
 import ml
 import config
 from pathlib import Path
-
+from processing import docx2pdf, createpass
 
 
 from config import backend_api_url
@@ -120,6 +120,7 @@ async def handle_audio(message: types.Message, state: FSMContext):
     file_path = file_info.file_path
     sanitized_filename = sanitize_filename(audio.file_name)
     destination = os.path.join(AUDIO_DIR, sanitized_filename)
+    user = rq.get_user(message.from_user.id)
     
     async def download_with_retry(file_path, destination, retries=3):
         for attempt in range(retries):
@@ -128,7 +129,7 @@ async def handle_audio(message: types.Message, state: FSMContext):
                     await bot.download_file(file_path, destination)
                 await message.reply(f"Аудиофайл {sanitized_filename} успешно загружен и сохранен!")
                 await rq.add_task(message.chat.id, f"app/audio_files/{sanitized_filename}")
-                # await ml.diarize_transcript_audio(f"app/audio_files/{sanitized_filename}", message.chat.id)
+                await ml.diarize_transcript_audio(f"app/audio_files/{sanitized_filename}", message.chat.id)
                 
                 audio_path = f"app/audio_files/{sanitized_filename}"
                 filename = Path(audio_path).stem
@@ -137,7 +138,10 @@ async def handle_audio(message: types.Message, state: FSMContext):
                 yandexgpttext = await ml.yandexgpt(text,prompt=config.prompt)
                 await ml.create_doc_from_text(yandexgpttext, audio_path)
                 otch_id = await rq.get_last_task_id(message.chat.id)
-                await rq.add_all_to_task(id=otch_id,yandexgpt_text=yandexgpttext,output_csv_path=f"app/outputs/{filename}/transcription.csv",otchet_docx_path=f"app/outputs/{filename}/docx.docx",otchet_pdf_path="",transcript_docx_path=f"app/outputs/{filename}/decryption.docx",status=2)
+                docx2pdf(f"app/outputs/{filename}/docx.docx", f"app/outputs/{filename}/pdf.pdf")
+                createpass(f"app/outputs/{filename}/pdf.pdf", user["password"])
+                createpass(f"app/outputs/{filename}/docx.docx", user["password"])
+                await rq.add_all_to_task(id=otch_id,yandexgpt_text=yandexgpttext,output_csv_path=f"app/outputs/{filename}/transcription.csv",otchet_docx_path=f"app/outputs/{filename}/docx.docx",otchet_pdf_path=f"app/outputs/{filename}/pdf.pdf",transcript_docx_path=f"app/outputs/{filename}/decryption.docx",status=2)
                 # добавить функцию док -- пдф
                 return
             except asyncio.TimeoutError:

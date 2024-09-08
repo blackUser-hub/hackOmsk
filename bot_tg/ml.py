@@ -30,78 +30,78 @@ async def load_pipeline_from_pretrained(path_to_config: str | Path) -> Pipeline:
     return pipeline
 
 async def diarize_transcript_audio(audio_path, otchet_id):
-    # PATH_TO_CONFIG = config.PATH_TO_CONFIG
-    # pipeline = await load_pipeline_from_pretrained(PATH_TO_CONFIG)
-    # device = config.device
-    # pipeline = pipeline.to(torch.device(device))
-    # whisper_model = whisperx.load_model("small", device, compute_type="int8")
-    # audio_file = audio_path
-    # filename = Path(audio_path)
-    # filename = filename.stem
+    PATH_TO_CONFIG = config.PATH_TO_CONFIG
+    pipeline = await load_pipeline_from_pretrained(PATH_TO_CONFIG)
+    device = config.device
+    pipeline = pipeline.to(torch.device(device))
+    whisper_model = whisperx.load_model("large-v3", device, compute_type="int8")
+    audio_file = audio_path
+    filename = Path(audio_path)
+    filename = filename.stem
 
-    # # Выполнение диаризации на всей записи
-    # print("Диаризирую")
-    # diarization_result = pipeline({"audio": audio_file})
+    # Выполнение диаризации на всей записи
+    print("Диаризирую")
+    diarization_result = pipeline({"audio": audio_file})
 
-    # # Преобразование результата диаризации в DataFrame
-    # diarization_list = []
-    # for segment, track, label in diarization_result.itertracks(yield_label=True):
-    #     diarization_list.append({
-    #         'start': segment.start,
-    #         'end': segment.end,
-    #         'speaker': label
-    #     })
+    # Преобразование результата диаризации в DataFrame
+    diarization_list = []
+    for segment, track, label in diarization_result.itertracks(yield_label=True):
+        diarization_list.append({
+            'start': segment.start,
+            'end': segment.end,
+            'speaker': label
+        })
 
-    # diarization_df = pd.DataFrame(diarization_list)
-    # print("Diarization DataFrame:")
-    # print(diarization_df)
+    diarization_df = pd.DataFrame(diarization_list)
+    print("Diarization DataFrame:")
+    print(diarization_df)
 
-    # # Транскрипция всей записи
-    # print("Транскрибирую")
-    # transcription_result = whisper_model.transcribe(audio_file)
-    # print("Закончил транскрипцию")
+    # Транскрипция всей записи
+    print("Транскрибирую")
+    transcription_result = whisper_model.transcribe(audio_file)
+    print("Закончил транскрипцию")
 
-    # # Выравнивание сегментов
-    # aligned_model, metadata = whisperx.load_align_model(
-    #     language_code=transcription_result["language"], device=device
-    # )
-    # aligned_result = whisperx.align(
-    #     transcription_result["segments"], aligned_model, metadata, audio_file, device
-    # )
+    # Выравнивание сегментов
+    aligned_model, metadata = whisperx.load_align_model(
+        language_code=transcription_result["language"], device=device
+    )
+    aligned_result = whisperx.align(
+        transcription_result["segments"], aligned_model, metadata, audio_file, device
+    )
 
-    # # Присвоение говорящих сегментам
-    # segments_with_speakers = whisperx.assign_word_speakers(diarization_df, aligned_result)
+    # Присвоение говорящих сегментам
+    segments_with_speakers = whisperx.assign_word_speakers(diarization_df, aligned_result)
 
-    # # Преобразование итогового результата транскрипции с говорящими в DataFrame
-    # all_transcription_list = []
-    # for segment in segments_with_speakers['segments']:
-    #     if isinstance(segment, dict):
-    #         speaker = segment.get('speaker', 'unknown')
-    #         text = segment.get('text', '')
-    #         start = segment.get('start', 0)
-    #         end = segment.get('end', 0)
+    # Преобразование итогового результата транскрипции с говорящими в DataFrame
+    all_transcription_list = []
+    for segment in segments_with_speakers['segments']:
+        if isinstance(segment, dict):
+            speaker = segment.get('speaker', 'unknown')
+            text = segment.get('text', '')
+            start = segment.get('start', 0)
+            end = segment.get('end', 0)
 
-    #         all_transcription_list.append({
-    #             'speaker': speaker,
-    #             'text': text,
-    #             'start': start,
-    #             'end': end
-    #         })
+            all_transcription_list.append({
+                'speaker': speaker,
+                'text': text,
+                'start': start,
+                'end': end
+            })
 
-    # transcription_df = pd.DataFrame(all_transcription_list)
-    # print("Итоговая транскрипция с говорящими:")
-    # print(transcription_df)
+    transcription_df = pd.DataFrame(all_transcription_list)
+    print("Итоговая транскрипция с говорящими:")
+    print(transcription_df)
 
-    # # Подсчет уникальных спикеров
-    # unique_speakers = diarization_df['speaker'].unique()
-    # num_speakers = len(unique_speakers)
-    # print(f"Количество уникальных спикеров: {num_speakers}")
+    # Подсчет уникальных спикеров
+    unique_speakers = diarization_df['speaker'].unique()
+    num_speakers = len(unique_speakers)
+    print(f"Количество уникальных спикеров: {num_speakers}")
 
 
-    # transcription_df.to_csv(f"app/outputs/{filename}/transcription.csv",sep=";")
-    # rq.add_output_csv_path(otchet_id, f"app/outputs/{filename}/transcription.csv")
-    # 
-    pass
+    transcription_df.to_csv(f"app/outputs/{filename}/transcription.csv",sep=";")
+    rq.add_output_csv_path(otchet_id, f"app/outputs/{filename}/transcription.csv")
+    
+    
 
 async def get_text_with_time(audio_path):
     filename = Path(audio_path)

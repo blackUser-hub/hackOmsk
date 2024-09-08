@@ -4,11 +4,13 @@ import aiohttp
 import logging
 import psycopg2
 from typing import List, Dict, Optional
+from config import engine_url
+
 logger = logging.getLogger(__name__)
 
 
 async def init_user(tg_id: int, username: str, fullname: str, status: int, tasks: int):
-    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    conn = (psycopg2.connect(engine_url))
     cur = conn.cursor()
     cur.execute('''
        INSERT INTO users (tg_id, username, password, status, tasks) VALUES (%s, %s, %s, %s, %s)
@@ -17,7 +19,7 @@ async def init_user(tg_id: int, username: str, fullname: str, status: int, tasks
     conn.close()
 
 async def add_task(tg_id: int, audio_path: str):
-    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    conn = (psycopg2.connect(engine_url))
     cur = conn.cursor()
     cur.execute("""INSERT INTO tasks (tg_id, audio_path, status) VALUES(%s, %s, %s)""", (tg_id, audio_path, 1))
     conn.commit()
@@ -76,7 +78,7 @@ async def get_last_task_id(tg_id: int):
 
 
 async def add_output_csv_path(id:int, filename:str):
-    conn = (psycopg2.connect("postgresql://postgres:mypassword@db/postgres"))
+    conn = (psycopg2.connect(engine_url))
     cur = conn.cursor()
     cur.execute('''UPDATE tasks SET output_csv_path=%s, statatus=2 WHERE id=%s''', (filename, id))
     conn.commit()
