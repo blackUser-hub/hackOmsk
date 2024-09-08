@@ -6,6 +6,8 @@ backend_api_url = os.getenv("API_URL")
 
 engine_url = "postgresql://postgres:mypassword@db/postgres"
 
+yatoken = os.getenv("yandextoken")
+
 device  = 'cpu'
 PATH_TO_CONFIG = 'config.yaml'
 prompt = """

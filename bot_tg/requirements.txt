@@ -9,3 +9,4 @@ pydub
 python-docx
 aspose-words 
 Spire.Office
+yadisk-async
